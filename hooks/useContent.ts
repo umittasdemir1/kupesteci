@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 import { DEFAULT_CONTENT, SiteContent } from './defaultContent';
 
 const STORAGE_KEY = 'kupesteci_content';
+const CONTENT_KEY = 'main';
 
-// Get content from localStorage or return default
-function getStoredContent(): SiteContent {
+// Get content from localStorage as initial fallback
+function getInitialContent(): SiteContent {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
@@ -16,27 +18,40 @@ function getStoredContent(): SiteContent {
     return DEFAULT_CONTENT;
 }
 
-// Save content to localStorage
-function saveToStorage(content: SiteContent): void {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
-    } catch (error) {
-        console.error('Error saving to localStorage:', error);
-    }
-}
-
-// Custom hook for content management
+// Custom hook for content management (Admin Panel)
 export function useContent() {
-    const [content, setContent] = useState<SiteContent>(getStoredContent);
+    const [content, setContent] = useState<SiteContent>(getInitialContent);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-    // Reload content from storage (useful for syncing between tabs)
-    const reloadContent = useCallback(() => {
-        setContent(getStoredContent());
+    // Fetch from Supabase on mount
+    const fetchContent = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('site_content')
+                .select('content')
+                .eq('key', CONTENT_KEY)
+                .single();
+
+            if (error) throw error;
+            if (data?.content && Object.keys(data.content).length > 0) {
+                setContent(data.content as SiteContent);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data.content));
+            }
+        } catch (error) {
+            console.error('Error fetching from Supabase:', error);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
-    // Update a specific section
+    useEffect(() => {
+        fetchContent();
+    }, [fetchContent]);
+
+    // Update a specific section locally
     const updateSection = useCallback(<K extends keyof SiteContent>(
         section: K,
         data: SiteContent[K]
@@ -47,22 +62,43 @@ export function useContent() {
         }));
     }, []);
 
-    // Save all content to localStorage
-    const saveContent = useCallback(() => {
+    // Save all content to Supabase
+    const saveContent = useCallback(async () => {
         setIsSaving(true);
         try {
-            saveToStorage(content);
+            const { error } = await supabase
+                .from('site_content')
+                .update({ content: content, updated_at: new Date().toISOString() })
+                .eq('key', CONTENT_KEY);
+
+            if (error) throw error;
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
             setLastSaved(new Date());
+        } catch (error) {
+            console.error('Error saving to Supabase:', error);
+            alert('Kaydetme sırasında bir hata oluştu: ' + (error as Error).message);
         } finally {
             setIsSaving(false);
         }
     }, [content]);
 
     // Reset to default content
-    const resetToDefault = useCallback(() => {
-        setContent(DEFAULT_CONTENT);
-        saveToStorage(DEFAULT_CONTENT);
-        setLastSaved(new Date());
+    const resetToDefault = useCallback(async () => {
+        if (window.confirm('Veritabanındaki veriler varsayılana döndürülecek. Emin misiniz?')) {
+            setContent(DEFAULT_CONTENT);
+            const { error } = await supabase
+                .from('site_content')
+                .update({ content: DEFAULT_CONTENT, updated_at: new Date().toISOString() })
+                .eq('key', CONTENT_KEY);
+
+            if (error) {
+                console.error('Error resetting Supabase:', error);
+            } else {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CONTENT));
+                setLastSaved(new Date());
+            }
+        }
     }, []);
 
     // Export content as JSON file
@@ -83,12 +119,11 @@ export function useContent() {
     const importContent = useCallback((file: File) => {
         return new Promise<void>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const imported = JSON.parse(e.target?.result as string) as SiteContent;
                     setContent(imported);
-                    saveToStorage(imported);
-                    setLastSaved(new Date());
+                    // We don't auto-save to Supabase here, User must click "Save"
                     resolve();
                 } catch (error) {
                     reject(new Error('Geçersiz JSON dosyası'));
@@ -102,30 +137,54 @@ export function useContent() {
     return {
         content,
         isSaving,
+        isLoading,
         lastSaved,
         updateSection,
         saveContent,
-        reloadContent,
         resetToDefault,
         exportContent,
         importContent
     };
 }
 
-// Simple hook for reading content only (for main site components)
+// Hook for reading content only (Site Home)
 export function useReadContent() {
-    const [content, setContent] = useState<SiteContent>(getStoredContent);
+    const [content, setContent] = useState<SiteContent>(getInitialContent);
 
     useEffect(() => {
-        // Listen for storage changes (when admin saves in another tab)
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === STORAGE_KEY) {
-                setContent(getStoredContent());
+        const fetchContent = async () => {
+            const { data, error } = await supabase
+                .from('site_content')
+                .select('content')
+                .eq('key', CONTENT_KEY)
+                .single();
+
+            if (!error && data?.content && Object.keys(data.content).length > 0) {
+                setContent(data.content as SiteContent);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data.content));
             }
         };
 
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+        fetchContent();
+
+        // Optional: Real-time subscription for instant updates on all clients
+        const subscription = supabase
+            .channel('site_content_changes')
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'site_content',
+                filter: `key=eq.${CONTENT_KEY}`
+            }, (payload) => {
+                if (payload.new && (payload.new as any).content) {
+                    setContent((payload.new as any).content as SiteContent);
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
     }, []);
 
     return content;

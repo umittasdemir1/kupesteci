@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Download, Repeat, Save, PictureInPicture, Images, Store, BriefcaseBusiness, LayoutGrid, Contact } from 'lucide-react';
+import { Upload, Download, Repeat, Save, PictureInPicture, Images, Store, BriefcaseBusiness, LayoutGrid, Contact, LogOut } from 'lucide-react';
 import { useContent } from '../hooks/useContent';
+import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
+import ImageUpload from '../components/ImageUpload';
 import { Slide, Service, Project } from '../types';
 import { AboutContent, FooterContent } from '../hooks/defaultContent';
 
@@ -21,6 +24,12 @@ const AdminPanel: React.FC = () => {
     const [activeTab, setActiveTab] = useState<TabType>('hero');
     const [notification, setNotification] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/login');
+    };
 
     const showNotification = (message: string) => {
         setNotification(message);
@@ -124,6 +133,13 @@ const AdminPanel: React.FC = () => {
                         <PictureInPicture size={16} />
                         Siteyi Gör
                     </a>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-900/50 hover:bg-red-800/50 text-red-200 rounded-lg text-sm transition-colors"
+                    >
+                        <LogOut size={16} />
+                        Çıkış
+                    </button>
                 </div>
             </header>
 
@@ -212,22 +228,11 @@ const HeroEditor: React.FC<{
                         <h3 className="text-lg font-bold mb-4 text-amber-400">Slayt {index + 1}</h3>
 
                         <div className="mb-4">
-                            <label className="block text-sm text-gray-400 mb-2">Görsel Yolu</label>
-                            <input
-                                type="text"
+                            <ImageUpload
+                                label="Görsel"
                                 value={slide.image}
-                                onChange={(e) => updateSlide(index, 'image', e.target.value)}
-                                className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white"
-                                placeholder="/assets/gorsel.png"
+                                onChange={(url) => updateSlide(index, 'image', url)}
                             />
-                            {slide.image && (
-                                <img
-                                    src={slide.image}
-                                    alt="Önizleme"
-                                    className="mt-2 w-full h-32 object-cover rounded"
-                                    onError={(e) => (e.currentTarget.style.display = 'none')}
-                                />
-                            )}
                         </div>
 
                         <div className="mb-4">
@@ -284,22 +289,11 @@ const AboutEditor: React.FC<{
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                        <h3 className="text-lg font-bold mb-4 text-amber-400">Ana Görsel</h3>
-                        <input
-                            type="text"
+                        <ImageUpload
+                            label="Ana Görsel"
                             value={about.image}
-                            onChange={(e) => updateField('image', e.target.value)}
-                            className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white"
-                            placeholder="/assets/about.jpg"
+                            onChange={(url) => updateField('image', url)}
                         />
-                        {about.image && (
-                            <img
-                                src={about.image}
-                                alt="Önizleme"
-                                className="mt-3 w-full h-48 object-cover rounded"
-                                onError={(e) => (e.currentTarget.style.display = 'none')}
-                            />
-                        )}
                     </div>
 
                     <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
@@ -394,21 +388,11 @@ const ServicesEditor: React.FC<{
                         <h3 className="text-lg font-bold mb-4 text-amber-400">Hizmet {index + 1}</h3>
 
                         <div className="mb-4">
-                            <label className="block text-sm text-gray-400 mb-2">Görsel Yolu</label>
-                            <input
-                                type="text"
+                            <ImageUpload
+                                label="Hizmet Görseli"
                                 value={service.image}
-                                onChange={(e) => updateService(index, 'image', e.target.value)}
-                                className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white"
+                                onChange={(url) => updateService(index, 'image', url)}
                             />
-                            {service.image && (
-                                <img
-                                    src={service.image}
-                                    alt="Önizleme"
-                                    className="mt-2 w-full h-32 object-cover rounded"
-                                    onError={(e) => (e.currentTarget.style.display = 'none')}
-                                />
-                            )}
                         </div>
 
                         <div className="mb-4">
@@ -457,21 +441,11 @@ const ProjectsEditor: React.FC<{
                         <h3 className="text-lg font-bold mb-4 text-amber-400">Proje {index + 1}</h3>
 
                         <div className="mb-4">
-                            <label className="block text-sm text-gray-400 mb-2">Görsel Yolu</label>
-                            <input
-                                type="text"
+                            <ImageUpload
+                                label="Proje Görseli"
                                 value={project.image}
-                                onChange={(e) => updateProject(index, 'image', e.target.value)}
-                                className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white"
+                                onChange={(url) => updateProject(index, 'image', url)}
                             />
-                            {project.image && (
-                                <img
-                                    src={project.image}
-                                    alt="Önizleme"
-                                    className="mt-2 w-full h-32 object-cover rounded"
-                                    onError={(e) => (e.currentTarget.style.display = 'none')}
-                                />
-                            )}
                         </div>
 
                         <div className="mb-4">
