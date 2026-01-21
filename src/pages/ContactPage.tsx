@@ -139,7 +139,7 @@ const ContactPage: React.FC = () => {
                                 </div>
                                 <div className="aspect-[4/3] lg:aspect-auto lg:h-[500px]">
                                     <iframe
-                                        src="https://www.google.com/maps/embed/v1/place?key=AIzaSyCuEYRy-Cs1WcoN-GX5NxJ8WxIbqHUUvGg&q=28Q6%2B73+Bodrum+Muğla&zoom=17"
+                                        src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=28Q6%2B73+Bodrum+Muğla&zoom=17`}
                                         width="100%"
                                         height="100%"
                                         style={{ border: 0 }}
