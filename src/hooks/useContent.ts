@@ -1,16 +1,46 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { DEFAULT_CONTENT, SiteContent } from './defaultContent';
+import { DEFAULT_CONTENT } from './defaultContent';
+import { SiteContent } from '../types';
 
 const STORAGE_KEY = 'kupesteci_content';
 const CONTENT_KEY = 'main';
+
+// Deep merge function to fill missing fields with defaults
+function mergeWithDefaults(fetched: Partial<SiteContent>): SiteContent {
+    return {
+        // Deep merge for nested objects to ensure new fields are added
+        branding: { ...DEFAULT_CONTENT.branding, ...fetched.branding },
+        navigation: { ...DEFAULT_CONTENT.navigation, ...fetched.navigation },
+        servicesSection: { ...DEFAULT_CONTENT.servicesSection, ...fetched.servicesSection },
+        gallerySection: { ...DEFAULT_CONTENT.gallerySection, ...fetched.gallerySection },
+        footerSection: { ...DEFAULT_CONTENT.footerSection, ...fetched.footerSection },
+        whatsapp: { ...DEFAULT_CONTENT.whatsapp, ...fetched.whatsapp },
+        seo: {
+            ...DEFAULT_CONTENT.seo,
+            ...fetched.seo,
+            pages: {
+                ...DEFAULT_CONTENT.seo.pages,
+                ...(fetched.seo?.pages || {})
+            }
+        },
+        // Existing arrays/fields
+        hero: fetched.hero || DEFAULT_CONTENT.hero,
+        about: fetched.about || DEFAULT_CONTENT.about,
+        services: fetched.services || DEFAULT_CONTENT.services,
+        projects: fetched.projects || DEFAULT_CONTENT.projects,
+        references: fetched.references || DEFAULT_CONTENT.references,
+        footer: fetched.footer || DEFAULT_CONTENT.footer,
+    };
+}
 
 // Get content from localStorage as initial fallback
 function getInitialContent(): SiteContent {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-            return JSON.parse(stored);
+            const parsed = JSON.parse(stored);
+            return mergeWithDefaults(parsed);
         }
     } catch (error) {
         console.error('Error reading from localStorage:', error);
@@ -37,8 +67,9 @@ export function useContent() {
 
             if (error) throw error;
             if (data?.content && Object.keys(data.content).length > 0) {
-                setContent(data.content as SiteContent);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data.content));
+                const merged = mergeWithDefaults(data.content as Partial<SiteContent>);
+                setContent(merged);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
             }
         } catch (error) {
             console.error('Error fetching from Supabase:', error);
@@ -121,9 +152,9 @@ export function useContent() {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
-                    const imported = JSON.parse(e.target?.result as string) as SiteContent;
-                    setContent(imported);
-                    // We don't auto-save to Supabase here, User must click "Save"
+                    const imported = JSON.parse(e.target?.result as string) as Partial<SiteContent>;
+                    const merged = mergeWithDefaults(imported);
+                    setContent(merged);
                     resolve();
                 } catch (error) {
                     reject(new Error('Geçersiz JSON dosyası'));
@@ -160,8 +191,9 @@ export function useReadContent() {
                 .single();
 
             if (!error && data?.content && Object.keys(data.content).length > 0) {
-                setContent(data.content as SiteContent);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data.content));
+                const merged = mergeWithDefaults(data.content as Partial<SiteContent>);
+                setContent(merged);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
             }
         };
 
@@ -177,7 +209,8 @@ export function useReadContent() {
                 filter: `key=eq.${CONTENT_KEY}`
             }, (payload) => {
                 if (payload.new && (payload.new as any).content) {
-                    setContent((payload.new as any).content as SiteContent);
+                    const merged = mergeWithDefaults((payload.new as any).content as Partial<SiteContent>);
+                    setContent(merged);
                 }
             })
             .subscribe();

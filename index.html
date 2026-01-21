@@ -1,38 +1,45 @@
-
 <!DOCTYPE html>
 <html lang="tr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Küpeşteci | 1920'den Günümüze Ahşapta Ustalık</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Noto+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              serif: ['Noto Serif', 'serif'],
-              sans: ['Noto Sans', 'sans-serif'],
-            },
-            colors: {
-              walnut: '#2C1B14',
-              'walnut-light': '#3D2B1F',
-              cream: '#FDFBF7',
-              gold: '#A68B5A',
-            },
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Küpeşteci | 1920'den Günümüze Ahşapta Ustalık</title>
+  
+  <!-- Preload hero image for faster initial load -->
+  <link rel="preload" as="image" href="/assets/staircase1.png" fetchpriority="high" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Noto+Sans:wght@300;400;600&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Noto Serif', 'serif'],
+            sans: ['Noto Sans', 'sans-serif'],
+          },
+          colors: {
+            walnut: '#2C1B14',
+            'walnut-light': '#3D2B1F',
+            cream: '#FDFBF7',
+            gold: '#A68B5A',
           },
         },
-      };
-    </script>
-    <style>
-      body {
-        background-color: #FDFBF7;
-      }
-      .scroll-smooth {
-        scroll-behavior: smooth;
-      }
-    </style>
+      },
+    };
+  </script>
+  <style>
+    body {
+      background-color: #FDFBF7;
+    }
+
+    .scroll-smooth {
+      scroll-behavior: smooth;
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -42,10 +49,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/src/index.css">
 </head>
-  <body class="scroll-smooth">
-    <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
+
+<body class="scroll-smooth">
+  <div id="root"></div>
+  <script type="module" src="/src/index.tsx"></script>
 </body>
+
 </html>
