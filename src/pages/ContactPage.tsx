@@ -11,6 +11,32 @@ const ContactPage: React.FC = () => {
     const seo = content.seo;
 
     useEffect(() => {
+        const initLocator = async () => {
+            try {
+                // @ts-ignore
+                if (typeof customElements !== 'undefined') {
+                    await customElements.whenDefined('gmpx-store-locator');
+                    const locator = document.querySelector('gmpx-store-locator');
+                    if (locator) {
+                        const CONFIGURATION = {
+                            "locations": [
+                                { "title": "Küpeşteci Merdiven", "address1": "Gürece, Cumhuriyet Cd. No: 323/A", "address2": "Bodrum, Muğla, Türkiye", "coords": { "lat": 37.0382411, "lng": 27.3101655 }, "placeId": "ChIJtRf7qZBtvhQRX2k-B-qEGvc" }
+                            ],
+                            "mapOptions": { "center": { "lat": 37.0382411, "lng": 27.3101655 }, "fullscreenControl": true, "mapTypeControl": false, "streetViewControl": false, "zoom": 15, "zoomControl": true, "maxZoom": 17, "mapId": "" },
+                            "mapsApiKey": import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+                            "capabilities": { "input": true, "autocomplete": true, "directions": true, "distanceMatrix": true, "details": true, "actions": false }
+                        };
+                        (locator as any).configureFromQuickBuilder(CONFIGURATION);
+                    }
+                }
+            } catch (err) {
+                console.error('Error initializing map locator:', err);
+            }
+        };
+        initLocator();
+    }, []);
+
+    useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
@@ -138,20 +164,17 @@ const ContactPage: React.FC = () => {
                                     </h2>
                                 </div>
                                 <div className="aspect-[4/3] lg:aspect-auto lg:h-[500px]">
-                                    <iframe
-                                        src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=28Q6%2B73+Bodrum+Muğla&zoom=17`}
-                                        width="100%"
-                                        height="100%"
-                                        style={{ border: 0 }}
-                                        allowFullScreen
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer-when-downgrade"
-                                        title="Küpeşteci Merdiven Konum"
-                                    ></iframe>
+                                    {/* Google Maps Locator Plus */}
+                                    <div className="w-full h-full">
+                                        {/* @ts-ignore */}
+                                        <gmpx-api-loader key={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} solution-channel="GMP_QB_locatorplus_v11_cABCDE"></gmpx-api-loader>
+                                        {/* @ts-ignore */}
+                                        <gmpx-store-locator map-id="DEMO_MAP_ID" style={{ width: '100%', height: '100%' }}></gmpx-store-locator>
+                                    </div>
                                 </div>
                                 <div className="p-4 bg-walnut/5 border-t border-walnut/10">
                                     <a
-                                        href="https://www.google.com/maps/search/?api=1&query=28Q6%2B73+Bodrum+Muğla"
+                                        href={`https://www.google.com/maps/dir/?api=1&destination=37.0382411,27.3101655&destination_place_id=ChIJtRf7qZBtvhQRX2k-B-qEGvc`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center gap-2 text-gold hover:text-walnut font-bold text-sm uppercase tracking-wider transition-colors"
@@ -165,6 +188,7 @@ const ContactPage: React.FC = () => {
                     </div>
                 </section>
             </main>
+
 
             <Footer />
         </div>
