@@ -22,7 +22,7 @@ const HomePage: React.FC = () => {
                 <meta property="og:description" content={seo.pages.home.description} />
                 <meta property="og:image" content={seo.ogImage} />
                 <meta property="og:type" content="website" />
-                <link rel="canonical" href="https://www.kupestecimerdiven.com/" />
+                <link rel="canonical" href={window.location.href} />
             </Helmet>
             <Header />
             <main className="flex-grow">

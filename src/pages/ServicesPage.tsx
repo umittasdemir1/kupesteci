@@ -21,7 +21,7 @@ const ServicesPage: React.FC = () => {
                 <meta name="keywords" content={seo.keywords} />
                 <meta property="og:title" content={seo.pages.services.title} />
                 <meta property="og:description" content={seo.pages.services.description} />
-                <link rel="canonical" href="https://www.kupestecimerdiven.com/hizmetler" />
+                <link rel="canonical" href={window.location.href} />
             </Helmet>
             <Header />
             <main className="flex-grow pt-20">

@@ -22,7 +22,7 @@ const ReferencesPage: React.FC = () => {
                 <meta name="keywords" content={seo.keywords} />
                 <meta property="og:title" content={seo.pages.references.title} />
                 <meta property="og:description" content={seo.pages.references.description} />
-                <link rel="canonical" href="https://www.kupestecimerdiven.com/referanslar" />
+                <link rel="canonical" href={window.location.href} />
             </Helmet>
             <Header />
 

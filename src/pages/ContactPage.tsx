@@ -22,7 +22,7 @@ const ContactPage: React.FC = () => {
                 <meta name="keywords" content={seo.keywords} />
                 <meta property="og:title" content={seo.pages.contact.title} />
                 <meta property="og:description" content={seo.pages.contact.description} />
-                <link rel="canonical" href="https://www.kupestecimerdiven.com/iletisim" />
+                <link rel="canonical" href={window.location.href} />
             </Helmet>
             <Header />
 

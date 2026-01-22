@@ -22,7 +22,7 @@ const GalleryPage: React.FC = () => {
                 <meta name="keywords" content={seo.keywords} />
                 <meta property="og:title" content={seo.pages.gallery.title} />
                 <meta property="og:description" content={seo.pages.gallery.description} />
-                <link rel="canonical" href="https://www.kupestecimerdiven.com/galeri" />
+                <link rel="canonical" href={window.location.href} />
             </Helmet>
             <Header />
             <main className="flex-grow pt-20">

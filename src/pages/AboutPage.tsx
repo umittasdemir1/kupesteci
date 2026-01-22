@@ -22,7 +22,7 @@ const AboutPage: React.FC = () => {
                 <meta name="keywords" content={seo.keywords} />
                 <meta property="og:title" content={seo.pages.about.title} />
                 <meta property="og:description" content={seo.pages.about.description} />
-                <link rel="canonical" href="https://www.kupestecimerdiven.com/hakkimizda" />
+                <link rel="canonical" href={window.location.href} />
             </Helmet>
             <Header />
 
