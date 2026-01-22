@@ -59,6 +59,8 @@ const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/anasayfa" element={<HomePage />} />
           <Route path="/hakkimizda" element={<AboutPage />} />
           <Route path="/galeri" element={<GalleryPage />} />
           <Route path="/hizmetler" element={<ServicesPage />} />
