@@ -198,26 +198,6 @@ export function useReadContent() {
         };
 
         fetchContent();
-
-        // Optional: Real-time subscription for instant updates on all clients
-        const subscription = supabase
-            .channel('site_content_changes')
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'site_content',
-                filter: `key=eq.${CONTENT_KEY}`
-            }, (payload) => {
-                if (payload.new && (payload.new as any).content) {
-                    const merged = mergeWithDefaults((payload.new as any).content as Partial<SiteContent>);
-                    setContent(merged);
-                }
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(subscription);
-        };
     }, []);
 
     return content;
