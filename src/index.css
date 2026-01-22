@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Küpeşteci - Custom Styles */
 
 /* Smooth scroll behavior */

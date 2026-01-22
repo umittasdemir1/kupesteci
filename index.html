@@ -17,28 +17,17 @@
 
   <title>Küpeşteci | 1920'den Günümüze Ahşapta Ustalık</title>
   
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Performance Optimization: Preconnect to critical domains -->
+  <link rel="preconnect" href="https://jiwxgiiikuxzxlmtiivk.supabase.co">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Noto+Sans:wght@300;400;600&display=swap"
-    rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            serif: ['Noto Serif', 'serif'],
-            sans: ['Noto Sans', 'sans-serif'],
-          },
-          colors: {
-            walnut: '#2C1B14',
-            'walnut-light': '#3D2B1F',
-            cream: '#FDFBF7',
-            gold: '#A68B5A',
-          },
-        },
-      },
-    };
-  </script>
+    rel="stylesheet"
+    media="print"
+    onload="this.media='all'">
+  
   <style>
     body {
       background-color: #FDFBF7;
@@ -48,16 +37,6 @@
       scroll-behavior: smooth;
     }
   </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
-  }
-}
-</script>
-  <link rel="stylesheet" href="/src/index.css">
 </head>
 
 <body class="scroll-smooth">

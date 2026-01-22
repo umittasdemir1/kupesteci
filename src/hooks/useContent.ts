@@ -48,16 +48,13 @@ function getInitialContent(): SiteContent {
     return DEFAULT_CONTENT;
 }
 
-// Custom hook for content management (Admin Panel)
-export function useContent() {
-    const [content, setContent] = useState<SiteContent>(getInitialContent);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [lastSaved, setLastSaved] = useState<Date | null>(null);
+// Shared promise for content fetching to prevent multiple concurrent requests
+let sharedContentPromise: Promise<SiteContent> | null = null;
 
-    // Fetch from Supabase on mount
-    const fetchContent = useCallback(async () => {
-        setIsLoading(true);
+async function fetchSharedContent(): Promise<SiteContent> {
+    if (sharedContentPromise) return sharedContentPromise;
+
+    sharedContentPromise = (async () => {
         try {
             const { data, error } = await supabase
                 .from('site_content')
@@ -68,14 +65,38 @@ export function useContent() {
             if (error) throw error;
             if (data?.content && Object.keys(data.content).length > 0) {
                 const merged = mergeWithDefaults(data.content as Partial<SiteContent>);
-                setContent(merged);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                return merged;
             }
+            return DEFAULT_CONTENT;
         } catch (error) {
             console.error('Error fetching from Supabase:', error);
+            return getInitialContent();
         } finally {
-            setIsLoading(false);
+            // Keep the promise for a short duration or clear it to allow subsequent manual refreshes if needed
+            // For now, we clear it after completion so that if the user explicitly triggers a save/refresh, it works.
+            // But we can also keep it for the lifetime of the session.
+            sharedContentPromise = null;
         }
+    })();
+
+    return sharedContentPromise;
+}
+
+// Custom hook for content management (Admin Panel)
+export function useContent() {
+
+    const [content, setContent] = useState<SiteContent>(getInitialContent);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+    // Fetch from Supabase on mount
+    const fetchContent = useCallback(async () => {
+        setIsLoading(true);
+        const data = await fetchSharedContent();
+        setContent(data);
+        setIsLoading(false);
     }, []);
 
     useEffect(() => {
@@ -184,17 +205,8 @@ export function useReadContent() {
 
     useEffect(() => {
         const fetchContent = async () => {
-            const { data, error } = await supabase
-                .from('site_content')
-                .select('content')
-                .eq('key', CONTENT_KEY)
-                .single();
-
-            if (!error && data?.content && Object.keys(data.content).length > 0) {
-                const merged = mergeWithDefaults(data.content as Partial<SiteContent>);
-                setContent(merged);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-            }
+            const data = await fetchSharedContent();
+            setContent(data);
         };
 
         fetchContent();

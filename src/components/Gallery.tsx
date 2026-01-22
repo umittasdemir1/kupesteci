@@ -39,6 +39,7 @@ const Gallery: React.FC<GalleryProps> = ({ limit }) => {
                   <img
                     src={project.image}
                     alt={project.title}
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                   />
                 )}
